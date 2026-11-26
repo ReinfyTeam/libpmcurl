@@ -1,5 +1,6 @@
 name: libpmcurl
 authors:
+  - ReinfyTeam
   - GameParrot
 antigen: gameparrot\libpmcurl
 version: 1.1.1
