@@ -49,6 +49,9 @@ class CurlWorker {
 	}
 
 	public function doRequest(CurlRequest $req) : void {
+		if ($req->url === '') {
+			throw new \InvalidArgumentException('Curl URL must not be empty');
+		}
 		$handle = curl_init();
 		$curlHeaders = [];
 		foreach ($req->headers as $key => $value) {
