@@ -1,6 +1,6 @@
 {
 	"name": "reinfyteam/libpmcurl",
-	"description": "Curl library for PocketMine-MP using curl_multi.",
+	"description": "Curl library for Axolotl-PM using curl_multi.",
 	"version": "1.0.0",
 	"type": "library",
 	"license": "lgpl-3.0-or-later",
@@ -26,7 +26,7 @@
 		"php": "^8.4"
 	},
 	"require-dev": {
-		"axolotl-pm/pocketmine-mp": "5.51.1",
+		"axolotl-pm/pocketmine-mp": "5.51.2",
 		"phpstan/phpstan-strict-rules": "^2.0",
 		"phpstan/extension-installer": "^1.4",
 		"phpstan/phpstan": "^2.3",

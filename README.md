@@ -1,5 +1,13 @@
 # libpmcurl
-Curl library for PocketMine-MP using curl_multi
+Curl library for Axolotl-PM using curl_multi
+
+# Requirements
+
+- PHP `^8.4`.
+- Axolotl-PM API `5.0.0` or newer.
+- PHP extension `ext-curl`.
+
+CI analyzes PHP `8.4` and `8.5`. It builds the virion PHAR with AxolotlBucketLabs DevTools `4.1.2`.
 
 # Initialization
 
