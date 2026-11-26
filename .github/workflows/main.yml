@@ -60,7 +60,28 @@ jobs:
 
   devtools:
     name: Build virion with DevTools 4.1.2
-    uses: AxolotlBucketLabs/DevTools/.github/workflows/build-virion.yml@v4.1.2
-    with:
-      project: .
-      php-version: '8.4'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Axolotl-PM PHP
+        uses: axolotl-pm/setup-php-action@1.0.0
+        with:
+          php-version: '8.4'
+          install-path: ./bin
+          pm-version-major: '5'
+
+      - name: Build virion with DevTools
+        id: build
+        uses: AxolotlBucketLabs/DevTools@v4.1.2
+        with:
+          type: virion
+          project: .
+          output: build
+
+      - name: Upload virion PHAR
+        uses: actions/upload-artifact@v7
+        with:
+          name: libpmcurl-${{ github.sha }}
+          path: ${{ steps.build.outputs.phar }}
+          if-no-files-found: error

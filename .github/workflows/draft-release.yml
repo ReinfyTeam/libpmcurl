@@ -9,57 +9,53 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build virion PHAR with DevTools 4.1.2
-    if: startsWith(github.event.head_commit.message, 'Release ')
-    uses: AxolotlBucketLabs/DevTools/.github/workflows/build-virion.yml@v4.1.2
-    with:
-      project: .
-      php-version: '8.4'
-
   draft:
-    name: Create GitHub draft release
-    needs: build
-    if: needs.build.result == 'success'
+    name: Build and create draft release
+    if: startsWith(github.event.head_commit.message, 'Release ')
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: write
 
     steps:
-      - name: Download the built virion
-        uses: actions/download-artifact@v7
+      - uses: actions/checkout@v7
+
+      - name: Set up Axolotl-PM PHP
+        uses: axolotl-pm/setup-php-action@1.0.0
         with:
-          artifact-ids: ${{ needs.build.outputs.artifact-id }}
-          path: release
-          merge-multiple: true
+          php-version: '8.4'
+          install-path: ./bin
+          pm-version-major: '5'
+
+      - name: Build virion with DevTools
+        id: build
+        uses: AxolotlBucketLabs/DevTools@v4.1.2
+        with:
+          type: virion
+          project: .
+          output: build
 
       - name: Verify and create draft release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
-          RELEASE_SHA256: ${{ needs.build.outputs.sha256 }}
+          RELEASE_SHA256: ${{ steps.build.outputs.sha256 }}
+          RELEASE_PHAR: ${{ steps.build.outputs.phar }}
+          RELEASE_NAME: ${{ steps.build.outputs.artifact-name }}
           RELEASE_API: '5.0.0'
         shell: bash
         run: |
           set -euo pipefail
 
-          mapfile -t phars < <(find release -type f -name '*.phar' -print)
-          if (( ${#phars[@]} != 1 )); then
-            echo "Expected one virion PHAR, found ${#phars[@]}" >&2
-            exit 1
-          fi
+          test -f "$RELEASE_PHAR"
+          printf '%s  %s\n' "$RELEASE_SHA256" "$RELEASE_PHAR" | sha256sum --check
 
-          phar="${phars[0]}"
-          printf '%s  %s\n' "$RELEASE_SHA256" "$phar" | sha256sum --check
+          checksum_file="$RUNNER_TEMP/SHA256SUMS.txt"
+          printf '%s  %s\n' "$RELEASE_SHA256" "$(basename "$RELEASE_PHAR")" > "$checksum_file"
 
-          checksum_file="release/SHA256SUMS.txt"
-          printf '%s  %s\n' "$RELEASE_SHA256" "$(basename "$phar")" > "$checksum_file"
-
-          release_flags=(--verify-tag --draft --title "libpmcurl v${RELEASE_TAG}" --notes "For Axolotl-PM API ${RELEASE_API}.")
+          release_flags=(--verify-tag --draft --title "$RELEASE_NAME ${RELEASE_TAG}" --notes "For Axolotl-PM API ${RELEASE_API}.")
           if [[ "$RELEASE_TAG" =~ (alpha|beta|pre) ]]; then
             release_flags+=(--prerelease)
           fi
 
-          gh release create "$RELEASE_TAG" "$phar" "$checksum_file" "${release_flags[@]}"
+          gh release create "$RELEASE_TAG" "$RELEASE_PHAR" "$checksum_file" "${release_flags[@]}"
