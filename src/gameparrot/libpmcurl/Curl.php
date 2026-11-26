@@ -28,6 +28,7 @@ class Curl {
 	private PthreadsChannelReader $pthreadReader;
 	private PthreadsChannelWriter $pthreadWriter;
 
+	/** @var \Closure[] */
 	private array $requests = [];
 
 	public function __construct() {
@@ -76,11 +77,18 @@ class Curl {
 		$this->thread->start();
 	}
 
+	/**
+	 * @param array<string, string> $headers
+	 */
 	public function getRequest(string $url, \Closure $callback, array $headers = [], int $timeout = 10) : void {
 		$this->customRequest(new CurlRequest($url, $headers, $timeout), $callback);
 	}
 
-	public function postRequest(string $url, \Closure $callback, array $headers = [], string|array $body = "", int $timeout = 10) : void {
+	/**
+	 * @param array<string, string> $headers
+	 * @param array<string, mixed>|string $body
+	 */
+	public function postRequest(string $url, \Closure $callback, array $headers = [], array|string $body = "", int $timeout = 10) : void {
 		if (is_array($body)) {
 			$body = json_encode($body);
 			if (!isset($headers["Content-Type"])) {
@@ -96,6 +104,10 @@ class Curl {
 	public function customRequest(CurlRequest $request, \Closure $cb) : void {
 		$request->id = spl_object_id($cb);
 		$this->requests[$request->id] = $cb;
-		$this->pthreadWriter->write(igbinary_serialize($request));
+		$serialized = igbinary_serialize($request);
+		if ($serialized === null) {
+			throw new \RuntimeException('Unable to serialize curl request');
+		}
+		$this->pthreadWriter->write($serialized);
 	}
 }

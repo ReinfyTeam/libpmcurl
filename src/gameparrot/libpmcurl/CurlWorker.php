@@ -49,8 +49,8 @@ class CurlWorker {
 			CURLOPT_AUTOREFERER => true,
 			CURLOPT_FOLLOWLOCATION => true,
 			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_CONNECTTIMEOUT_MS => (int) ($req->timeout * 1000),
-			CURLOPT_TIMEOUT_MS => (int) ($req->timeout * 1000),
+			CURLOPT_CONNECTTIMEOUT_MS => $req->timeout * 1000,
+			CURLOPT_TIMEOUT_MS => $req->timeout * 1000,
 			CURLOPT_HTTPHEADER => $curlHeaders,
 			CURLOPT_HEADER => true,
 		]);
@@ -77,9 +77,19 @@ class CurlWorker {
 					$curlHandle = $status["handle"];
 					$requestId = $this->requests[spl_object_id($curlHandle)];
 
-					$result = new CurlResult($requestId, $status["result"], curl_getinfo($curlHandle, CURLINFO_HTTP_CODE), curl_getinfo($curlHandle, CURLINFO_HEADER_SIZE), curl_multi_getcontent($curlHandle));
+					$raw = curl_multi_getcontent($curlHandle);
+					if ($raw === null) {
+						$raw = '';
+					}
 
-					$this->writer->write(igbinary_serialize($result));
+					$result = new CurlResult($requestId, $status["result"], curl_getinfo($curlHandle, CURLINFO_HTTP_CODE), curl_getinfo($curlHandle, CURLINFO_HEADER_SIZE), $raw);
+
+					$serialized = igbinary_serialize($result);
+					if ($serialized === null) {
+						throw new \RuntimeException('Unable to serialize curl result');
+					}
+
+					$this->writer->write($serialized);
 
 					curl_multi_remove_handle($this->curlHandler, $curlHandle);
 					curl_close($curlHandle);

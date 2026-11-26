@@ -10,8 +10,12 @@ class CurlRequest {
 		/** @var array<string, string> */
 		public array $headers = [],
 		public int $timeout = 10,
+		/** @var array<int, mixed> */
 		public array $extraOpts = [],
 		public int $id = 0,
 	) {
+		if ($url === "" ) {
+			throw new \InvalidArgumentException('Curl URL must not be empty');
+		}
 	}
 }
