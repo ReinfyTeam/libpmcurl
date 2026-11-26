@@ -15,10 +15,18 @@
 			"gameparrot\\libpmcurl\\": "/src/gameparrot/libpmcurl"
 		}
 	},
+	"repositories": {
+		{
+            "type": "vcs",
+            "url": "https://github.com/axolotl-pm/PocketMine-MP",
+            "no-api": true
+        }
+	},
 	"require": {
 		"php": "^8.4"
 	},
 	"require-dev": {
+		"axolotl-pm/pocketmine-mp": "5.51.1",
 		"phpstan/phpstan-strict-rules": "^2.0",
 		"phpstan/extension-installer": "^1.4",
 		"phpstan/phpstan": "^2.3",
