@@ -1,5 +1,5 @@
 {
-	"name": "reinfyteam/libpmquery",
+	"name": "reinfyteam/libpmcurl",
 	"description": "Curl library for PocketMine-MP using curl_multi.",
 	"version": "1.0.0",
 	"type": "library",
@@ -12,17 +12,17 @@
 	"prefer-stable": true,
 	"autoload": {
 		"psr-4": {
-			"gameparrot\\libpmquery\\": "/src/gameparrot/libpmquery"
+			"gameparrot\\libpmcurl\\": "/src/gameparrot/libpmcurl"
 		}
 	},
 	"require": {
-		"php": "^7.4|^8.0"
+		"php": "^8.4"
 	},
 	"require-dev": {
-		"phpstan/phpstan": "^1.10.14",
-		"phpstan/phpstan-strict-rules": "^1.5.1",
-		"phpstan/extension-installer": "^1.3.0",
-		"friendsofphp/php-cs-fixer": "^3.11"
+		"phpstan/phpstan-strict-rules": "^2.0",
+		"phpstan/extension-installer": "^1.4",
+		"phpstan/phpstan": "^2.3",
+        "friendsofphp/php-cs-fixer": "^3.95"
 	},
 	"config": {
 		"allow-plugins": {
