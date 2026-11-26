@@ -24,14 +24,6 @@ use function trim;
 class Curl {
 	use SingletonTrait;
 
-	private static bool $packaged;
-	public static function isPackaged() : bool {
-		return self::$packaged;
-	}
-	public static function detectPackaged() : void {
-		self::$packaged = __CLASS__ !== 'gameparrot\libpmcurl\Curl';
-	}
-
 	private CurlThread $thread;
 	private PthreadsChannelReader $pthreadReader;
 	private PthreadsChannelWriter $pthreadWriter;
@@ -39,8 +31,6 @@ class Curl {
 	private array $requests = [];
 
 	public function __construct() {
-		self::detectPackaged();
-
 		/** @phpstan-var ThreadSafeArray<int, string> $mainToThreadBuffer */
 		$mainToThreadBuffer = new ThreadSafeArray();
 		/** @phpstan-var ThreadSafeArray<int, string> $threadToMainBuffer */

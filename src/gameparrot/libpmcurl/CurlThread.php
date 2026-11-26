@@ -22,10 +22,6 @@ class CurlThread extends Thread {
 		protected ThreadSafeArray $threadToMainBuffer,
 		protected SleeperHandlerEntry $sleeperEntry,
 	) {
-		if (!Curl::isPackaged()) {
-			$cl = Server::getInstance()->getPluginManager()->getPlugin("DEVirion")->getVirionClassLoader();
-			$this->setClassLoaders([Server::getInstance()->getLoader(), $cl]);
-		}
 	}
 
 	public function onRun() : void {
