@@ -15,13 +15,13 @@
 			"gameparrot\\libpmcurl\\": "/src/gameparrot/libpmcurl"
 		}
 	},
-	"repositories": {
+	"repositories": [
 		{
             "type": "vcs",
             "url": "https://github.com/axolotl-pm/PocketMine-MP",
             "no-api": true
         }
-	},
+	],
 	"require": {
 		"php": "^8.4"
 	},
