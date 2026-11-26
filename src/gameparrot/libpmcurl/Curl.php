@@ -20,6 +20,9 @@ use function spl_object_id;
 use function strtolower;
 use function substr;
 use function trim;
+use const CURLE_OK;
+use const CURLOPT_POST;
+use const CURLOPT_POSTFIELDS;
 
 class Curl {
 	use SingletonTrait;
@@ -85,7 +88,7 @@ class Curl {
 	}
 
 	/**
-	 * @param array<string, string> $headers
+	 * @param array<string, string>       $headers
 	 * @param array<string, mixed>|string $body
 	 */
 	public function postRequest(string $url, \Closure $callback, array $headers = [], array|string $body = "", int $timeout = 10) : void {

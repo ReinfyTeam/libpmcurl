@@ -7,9 +7,9 @@ namespace gameparrot\libpmcurl;
 use pmmp\thread\ThreadSafeArray;
 use pocketmine\network\mcpe\raklib\PthreadsChannelReader;
 use pocketmine\network\mcpe\raklib\SnoozeAwarePthreadsChannelWriter;
-use pocketmine\Server;
 use pocketmine\snooze\SleeperHandlerEntry;
 use pocketmine\thread\Thread;
+use function gc_enable;
 use function microtime;
 use function time_sleep_until;
 

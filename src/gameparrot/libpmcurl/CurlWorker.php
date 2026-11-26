@@ -21,6 +21,20 @@ use function curl_setopt_array;
 use function igbinary_serialize;
 use function igbinary_unserialize;
 use function spl_object_id;
+use const CURLINFO_HEADER_SIZE;
+use const CURLINFO_HTTP_CODE;
+use const CURLOPT_AUTOREFERER;
+use const CURLOPT_CONNECTTIMEOUT_MS;
+use const CURLOPT_FOLLOWLOCATION;
+use const CURLOPT_FORBID_REUSE;
+use const CURLOPT_FRESH_CONNECT;
+use const CURLOPT_HEADER;
+use const CURLOPT_HTTPHEADER;
+use const CURLOPT_RETURNTRANSFER;
+use const CURLOPT_SSL_VERIFYHOST;
+use const CURLOPT_SSL_VERIFYPEER;
+use const CURLOPT_TIMEOUT_MS;
+use const CURLOPT_URL;
 
 class CurlWorker {
 	private \CurlMultiHandle $curlHandler;
