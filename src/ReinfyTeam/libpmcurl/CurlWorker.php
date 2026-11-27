@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace gameparrot\libpmcurl;
+namespace ReinfyTeam\libpmcurl;
 
 use pocketmine\network\mcpe\raklib\PthreadsChannelReader;
 use pocketmine\network\mcpe\raklib\SnoozeAwarePthreadsChannelWriter;

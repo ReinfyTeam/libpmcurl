@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace gameparrot\libpmcurl;
+namespace ReinfyTeam\libpmcurl;
 
 class CurlRequest {
 	public function __construct(
