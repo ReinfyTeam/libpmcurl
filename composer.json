@@ -12,7 +12,7 @@
 	"prefer-stable": true,
 	"autoload": {
 		"psr-4": {
-			"gameparrot\\libpmcurl\\": "/src/gameparrot/libpmcurl"
+			"gameparrot\\libpmcurl\\": "src/"
 		}
 	},
 	"repositories": [
