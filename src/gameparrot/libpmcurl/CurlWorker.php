@@ -20,6 +20,7 @@ use function curl_setopt;
 use function curl_setopt_array;
 use function igbinary_serialize;
 use function igbinary_unserialize;
+use function is_int;
 use function spl_object_id;
 use const CURLINFO_HEADER_SIZE;
 use const CURLINFO_HTTP_CODE;
@@ -90,8 +91,9 @@ class CurlWorker {
 				if ($status === false) {
 					continue;
 				}
-				if (isset($status["handle"])) {
-					$curlHandle = $status["handle"];
+				$curlHandle = $status["handle"] ?? null;
+				$curlError = $status["result"] ?? null;
+				if ($curlHandle instanceof \CurlHandle && is_int($curlError)) {
 					$requestId = $this->requests[spl_object_id($curlHandle)];
 
 					$raw = curl_multi_getcontent($curlHandle);
@@ -99,7 +101,7 @@ class CurlWorker {
 						$raw = '';
 					}
 
-					$result = new CurlResult($requestId, $status["result"], curl_getinfo($curlHandle, CURLINFO_HTTP_CODE), curl_getinfo($curlHandle, CURLINFO_HEADER_SIZE), $raw);
+					$result = new CurlResult($requestId, $curlError, curl_getinfo($curlHandle, CURLINFO_HTTP_CODE), curl_getinfo($curlHandle, CURLINFO_HEADER_SIZE), $raw);
 
 					$serialized = igbinary_serialize($result);
 					if ($serialized === null) {

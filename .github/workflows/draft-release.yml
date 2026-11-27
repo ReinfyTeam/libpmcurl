@@ -2,72 +2,60 @@ name: Draft release
 
 on:
   push:
-    tags: "*"
+    tags:
+      - '*'
+
+permissions:
+  contents: read
 
 jobs:
   draft:
-    name: Create GitHub Draft Release
-    if: "startsWith(github.event.head_commit.message, 'Release ')"
+    name: Build and create draft release
+    if: startsWith(github.event.head_commit.message, 'Release ')
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v7
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Set up Axolotl-PM PHP
+        uses: axolotl-pm/setup-php-action@1.0.0
         with:
-          php-version: 8.0
-          ini-values: phar.readonly=0
-          coverage: none
+          php-version: '8.4'
+          install-path: ./bin
+          pm-version-major: '5'
 
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache composer dependencies
-        uses: actions/cache@v6
+      - name: Build virion with DevTools
+        id: build
+        uses: AxolotlBucketLabs/DevTools@v4.1.2
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          # Use composer.json for key, if composer.lock is not committed.
-          # key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          type: virion
+          project: .
+          output: build
 
-      - name: Install Composer dependencies
-        run: composer install --no-progress --no-dev --prefer-dist --optimize-autoloader --ignore-platform-reqs
-
-      - name: Download Pharynx phar builder
-        run: wget https://github.com/SOF3/pharynx/releases/latest/download/pharynx.phar -O pharynx.phar
-
-      - id: get-manifest
+      - name: Verify and create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_SHA256: ${{ steps.build.outputs.sha256 }}
+          RELEASE_PHAR: ${{ steps.build.outputs.phar }}
+          RELEASE_NAME: ${{ steps.build.outputs.artifact-name }}
+          RELEASE_API: '5.0.0'
+        shell: bash
         run: |
-          echo "NAME=$(grep '^name:' plugin.yml | cut -d' ' -f2- | xargs)" >> $GITHUB_OUTPUT
-          echo "PRERELEASE=$(grep '^version:' plugin.yml | cut -d' ' -f2- | xargs | grep -E 'alpha|beta|pre' && echo 'true')" >> $GITHUB_OUTPUT
-          echo "API=$(grep '^api:' plugin.yml | cut -d' ' -f2- | xargs)" >> $GITHUB_OUTPUT
-          sed -i '/src-namespace-prefix/d' plugin.yml
-          sed -i "s/version: .*/version: ${{ github.ref_name }}/g" plugin.yml
+          set -euo pipefail
 
-      - name: Build plugin archive
-        run: php pharynx.phar -i . -f LICENSE -c -p=${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
+          test -f "$RELEASE_PHAR"
+          printf '%s  %s\n' "$RELEASE_SHA256" "$RELEASE_PHAR" | sha256sum --check
 
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: release_artifacts
-          path: |
-            ${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
+          checksum_file="$RUNNER_TEMP/SHA256SUMS.txt"
+          printf '%s  %s\n' "$RELEASE_SHA256" "$(basename "$RELEASE_PHAR")" > "$checksum_file"
 
-      - name: Create draft release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: ${{ github.workspace }}/${{ steps.get-manifest.outputs.NAME }}.phar
-          commit: ${{ github.sha }}
-          draft: true
-          name: ${{ steps.get-manifest.outputs.NAME }} v${{ github.ref_name }}
-          prerelease: ${{ steps.get-manifest.outputs.PRERELEASE }}
-          tag: ${{ github.ref_name }}
-          #token: ${{ secrets.GITHUB_TOKEN }}
-          body: |
-            **For PocketMine API ${{ steps.get-manifest.outputs.API }}**
+          release_flags=(--verify-tag --draft --title "$RELEASE_NAME ${RELEASE_TAG}" --notes "For Axolotl-PM API ${RELEASE_API}.")
+          if [[ "$RELEASE_TAG" =~ (alpha|beta|pre) ]]; then
+            release_flags+=(--prerelease)
+          fi
+
+          gh release create "$RELEASE_TAG" "$RELEASE_PHAR" "$checksum_file" "${release_flags[@]}"
